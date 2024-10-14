@@ -26,7 +26,7 @@ const CheckoutForm = () => {
     }
 
     try {
-      const response = await axios.post('/api/payment', {
+      const response = await axios.post('http://localhost:5000/api/payment', {
         paymentMethodId: paymentMethod.id,
         amount: 5000, // Amount in cents ($50)
       });

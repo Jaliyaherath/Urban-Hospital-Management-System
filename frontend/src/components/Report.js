@@ -7,7 +7,7 @@ const Report = () => {
 
   const generateReport = async () => {
     try {
-      const response = await axios.get('/api/report', {
+      const response = await axios.get('http://localhost:5000/api/report', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       setReport(response.data);

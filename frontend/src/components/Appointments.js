@@ -16,15 +16,15 @@ const Appointments = () => {
       }
 
       // Get role
-      const userResponse = await axios.get('/api/auth/me', {
+      const userResponse = await axios.get('http://localhost:5000/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRole(userResponse.data.role);
 
       // Get appointments based on role
       const response = role === 'staff' || role === 'admin'
-        ? await axios.get('/api/appointments/staff', { headers: { Authorization: `Bearer ${token}` } })
-        : await axios.get('/api/appointments/patient', { headers: { Authorization: `Bearer ${token}` } });
+        ? await axios.get('http://localhost:5000/api/appointments/staff', { headers: { Authorization: `Bearer ${token}` } })
+        : await axios.get('http://localhost:5000/api/appointments/patient', { headers: { Authorization: `Bearer ${token}` } });
 
       setAppointments(response.data);
     } catch (error) {
@@ -45,7 +45,7 @@ const Appointments = () => {
       }
 
       await axios.post(
-        '/api/appointments/create',
+        'http://localhost:5000/api/appointments/create',
         { hospital, date },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -58,7 +58,7 @@ const Appointments = () => {
   const handleUpdate = async (id, newDate) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`/api/appointments/${id}`, { date: newDate }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.patch(`http://localhost:5000/api/appointments/${id}`, { date: newDate }, { headers: { Authorization: `Bearer ${token}` } });
       fetchAppointments();
     } catch (error) {
       console.error(error);
@@ -68,7 +68,7 @@ const Appointments = () => {
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`/api/appointments/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.delete(`http://localhost:5000/api/appointments/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       fetchAppointments();
     } catch (error) {
       console.error(error);

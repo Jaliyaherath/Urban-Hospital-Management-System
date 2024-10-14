@@ -9,7 +9,7 @@ const MedicalRecords = () => {
   // Function to fetch medical records for the patient
   const fetchRecords = async () => {
     try {
-      const response = await axios.get('/api/medical-records/patient', {
+      const response = await axios.get('http://localhost:5000/api/medical-records/patient', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }, // Set token in headers
       });
       setRecords(response.data); // Set fetched records in state
@@ -37,7 +37,7 @@ const MedicalRecords = () => {
     formData.append('pdfFile', pdfFile); // Append the selected PDF file
 
     try {
-      await axios.post('/api/medical-records/add', formData, {
+      await axios.post('http://localhost:5000/api/medical-records/add', formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`, // Set token in headers
           'Content-Type': 'multipart/form-data', // Ensure proper content type for file upload
