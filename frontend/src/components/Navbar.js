@@ -15,6 +15,8 @@ const Navbar = ({ setUser }) => {
       <Link to="/medical-records">Medical Records</Link>
       <Link to="/payment">Payment</Link>
       <Link to="/report">Report</Link>
+      <Link to="/labs">Lab Sessions</Link>
+      <Link to="/manage-labs">Manage Lab Appointments</Link>
       <button onClick={logout}>Logout</button>
     </nav>
   );

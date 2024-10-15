@@ -7,6 +7,8 @@ import Appointments from './components/Appointments';
 import MedicalRecords from './components/MedicalRecords';
 import Payment from './components/Payment';
 import Report from './components/Report';
+import LabSessions from './components/LabSessions';
+import ManageLabAppointments from './components/ManageLabAppointments';
 import axios from 'axios';
 
 const App = () => {
@@ -45,6 +47,8 @@ const App = () => {
             <Route path="/medical-records" element={<MedicalRecords />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/report" element={<Report />} />
+            <Route path="/labs" element={<LabSessions />} />
+            <Route path="/manage-labs" element={<ManageLabAppointments />} />
           </Routes>
         </>
       )}
