@@ -10,7 +10,7 @@ const Auth = ({ setUser }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = isLogin ? '/api/auth/login' : '/api/auth/register';
+    const url = isLogin ? 'http://localhost:5000/api/auth/login' : 'http://localhost:5000/api/auth/register';
     const data = isLogin ? { email, password } : { name, email, password };
 
     try {
