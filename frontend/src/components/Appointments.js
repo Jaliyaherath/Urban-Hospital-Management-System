@@ -5,6 +5,7 @@ const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [hospital, setHospital] = useState('');
   const [date, setDate] = useState('');
+  const [picture, setPicture] = useState(null);
   const [role, setRole] = useState('');
 
   // Fetch user role and appointments
@@ -44,10 +45,23 @@ const Appointments = () => {
         throw new Error('No token available, please log in.');
       }
 
+      // Create FormData to handle file upload
+      const formData = new FormData();
+      formData.append('hospital', hospital);
+      formData.append('date', date);
+      if (picture) {
+        formData.append('picture', picture);
+      }
+
       await axios.post(
         'http://localhost:5000/api/appointments/create',
-        { hospital, date },
-        { headers: { Authorization: `Bearer ${token}` } }
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
       );
       fetchAppointments(); // Refresh appointments list
     } catch (error) {
@@ -94,6 +108,12 @@ const Appointments = () => {
             onChange={(e) => setDate(e.target.value)}
             required
           />
+          <input
+            type="file"
+            onChange={(e) => setPicture(e.target.files[0])}
+            name='picture'
+            id='picture'
+          />
           <button type="submit">Book Appointment</button>
         </form>
       )}
@@ -103,6 +123,7 @@ const Appointments = () => {
         {appointments.map((appt) => (
           <li key={appt._id}>
             {appt.hospital} - {new Date(appt.date).toLocaleDateString()}
+            <img style={{width: '50px', height: '50px'}} src={appt.picture} alt="Appointment" />
             {role === 'staff' || role === 'admin' ? (
               <>
                 <button onClick={() => handleUpdate(appt._id, prompt('Enter new date'))}>Edit</button>
