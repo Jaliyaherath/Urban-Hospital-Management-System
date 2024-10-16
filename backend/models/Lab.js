@@ -5,7 +5,7 @@ const labSchema = new mongoose.Schema({
   category: { type: String, required: true },
   description: { type: String, required: true },
   price: { type: Number, required: true },
-  services: [String], // Additional services offered by the lab
+  services: [String],
   availability: [
     {
       startTime: { type: Date, required: true },
@@ -14,7 +14,7 @@ const labSchema = new mongoose.Schema({
   ],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Reference to the admin/staff who created the session
+    ref: 'User',
     required: true
   }
 });

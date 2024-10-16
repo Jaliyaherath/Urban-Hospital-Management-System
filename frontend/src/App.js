@@ -9,6 +9,8 @@ import Payment from './components/Payment';
 import Report from './components/Report';
 import LabSessions from './components/LabSessions';
 import ManageLabAppointments from './components/ManageLabAppointments';
+import TreatmentSessions from './components/TreatmentSessions'; 
+import ManageTreatmentAppointments from './components/ManageTreatmentAppointments';
 import axios from 'axios';
 
 const App = () => {
@@ -49,6 +51,8 @@ const App = () => {
             <Route path="/report" element={<Report />} />
             <Route path="/labs" element={<LabSessions />} />
             <Route path="/manage-labs" element={<ManageLabAppointments />} />
+            <Route path="/treatments" element={<TreatmentSessions />} />
+            <Route path="/manage-treatments" element={<ManageTreatmentAppointments />} />
           </Routes>
         </>
       )}

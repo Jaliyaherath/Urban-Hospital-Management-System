@@ -32,7 +32,7 @@ exports.addMedicalRecord = async (req, res) => {
   try {
     const { userId, record } = req.body;
 
-    // Find the user by userId
+    
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -78,7 +78,7 @@ exports.addMedicalRecord = async (req, res) => {
   }
 };
 
-// Get Medical Records for Patient (User)
+
 exports.getMedicalRecordsForPatient = async (req, res) => {
   try {
     const records = await MedicalRecord.find({ patient: req.user._id });
@@ -88,7 +88,7 @@ exports.getMedicalRecordsForPatient = async (req, res) => {
   }
 };
 
-// Update Medical Record (Staff/Admin)
+
 exports.updateMedicalRecord = async (req, res) => {
   try {
     const { recordId, newRecord } = req.body;
@@ -109,7 +109,7 @@ exports.updateMedicalRecord = async (req, res) => {
   }
 };
 
-// Delete Medical Record (Staff/Admin)
+
 exports.deleteMedicalRecord = async (req, res) => {
   try {
     const { recordId } = req.body;
