@@ -22,6 +22,7 @@ const medicalRecordRoutes = require('./routes/medicalRecordRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const labRoutes = require('./routes/labRoutes');
+const treatmentRoutes = require('./routes/treatmentRoutes');
 
 const app = express();
 connectDB();
@@ -32,10 +33,11 @@ app.use(express.json());
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/appointments', appointmentRoutes);
-app.use('/api/medical-records', medicalRecordRoutes); // Use medical records routes
+app.use('/api/medical-records', medicalRecordRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/report', reportRoutes);
-app.use('/api/labs', labRoutes);   
+app.use('/api/labs', labRoutes);
+app.use('/api/treatments', treatmentRoutes);
 
 app.use(cors({
     origin: 'http://localhost:5000', // Allow requests from the React app running on port 5000

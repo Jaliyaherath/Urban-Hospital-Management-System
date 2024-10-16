@@ -17,6 +17,8 @@ const Navbar = ({ setUser }) => {
       <Link to="/report">Report</Link>
       <Link to="/labs">Lab Sessions</Link>
       <Link to="/manage-labs">Manage Lab Appointments</Link>
+      <Link to="/treatments">Treatment Sessions</Link>
+      <Link to="/manage-treatments">Manage Treatment Appointments</Link>
       <button onClick={logout}>Logout</button>
     </nav>
   );

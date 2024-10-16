@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const appointmentSchema = new mongoose.Schema({
+const labappointmentSchema = new mongoose.Schema({
   lab: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Lab',
@@ -21,4 +21,4 @@ const appointmentSchema = new mongoose.Schema({
   totalPrice: { type: Number, required: true }
 });
 
-module.exports = mongoose.model('LabAppointment', appointmentSchema);
+module.exports = mongoose.model('LabAppointment', labappointmentSchema);

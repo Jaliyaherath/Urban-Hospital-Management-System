@@ -8,7 +8,7 @@ exports.addMedicalRecord = async (req, res) => {
   try {
     const { userId, record } = req.body;
 
-    // Find the user by userId
+    
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -18,17 +18,17 @@ exports.addMedicalRecord = async (req, res) => {
       return res.status(400).json({ message: 'No PDF file uploaded' });
     }
 
-    // Upload PDF to Firebase
+    
     const file = req.file;
     const firebaseFile = bucket.file(file.originalname);
     await firebaseFile.save(file.buffer, {
       metadata: { contentType: file.mimetype },
     });
 
-    // Get the public URL of the uploaded PDF
+    
     const fileUrl = `https://storage.googleapis.com/${bucket.name}/${file.originalname}`;
 
-    // Create a new medical record for the user
+    
     const newRecord = await MedicalRecord.create({
       patient: user._id,
       record,
@@ -41,7 +41,7 @@ exports.addMedicalRecord = async (req, res) => {
   }
 };
 
-// Get Medical Records for Patient (User)
+
 exports.getMedicalRecordsForPatient = async (req, res) => {
   try {
     const records = await MedicalRecord.find({ patient: req.user._id });
@@ -51,7 +51,7 @@ exports.getMedicalRecordsForPatient = async (req, res) => {
   }
 };
 
-// Update Medical Record (Staff/Admin)
+
 exports.updateMedicalRecord = async (req, res) => {
   try {
     const { recordId, newRecord } = req.body;
@@ -72,7 +72,7 @@ exports.updateMedicalRecord = async (req, res) => {
   }
 };
 
-// Delete Medical Record (Staff/Admin)
+
 exports.deleteMedicalRecord = async (req, res) => {
   try {
     const { recordId } = req.body;
