@@ -29,33 +29,48 @@ const Navbar = ({ setUser }) => {
   };
 
   return (
-    <nav>
-      <Link to="/">Home</Link>
-      {role === 'user' && (
-        <>
-          <Link to="/appointments">Appointments</Link>
-          <Link to="/medical-records">Medical Records</Link>
-          <Link to="/payment">Payment</Link>
-          <Link to="/report">Report</Link>
-          <Link to="/labs">Lab Sessions</Link>
-          <Link to="/treatments">Treatment Sessions</Link>
-        </>
-      )}
+    <nav className="bg-white shadow-lg no-print">
+      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+        {/* Logo */}
+        <div className="text-2xl font-bold text-gray-800">
+          <Link to="/" className="hover:text-blue-600 transition-colors">HealthCare</Link>
+        </div>
 
-      {(role === 'admin' || role === 'staff') && (
-        <>
-          <Link to="/appointments">Appointments</Link>
-          <Link to="/medical-records">Medical Records</Link>
-          <Link to="/payment">Payment</Link>
-          <Link to="/report">Report</Link>
-          <Link to="/labs">Lab Sessions</Link>
-          <Link to="/manage-labs">Manage Lab Appointments</Link>
-          <Link to="/treatments">Treatment Sessions</Link>
-          <Link to="/manage-treatments">Manage Treatment Appointments</Link>
-        </>
-      )}
+        {/* Links based on role */}
+        <div className="flex space-x-6">
+          {role === 'user' && (
+            <>
+              <Link to="/appointments" className="hover:text-blue-500 text-gray-600">Appointments</Link>
+              <Link to="/medical-records" className="hover:text-blue-500 text-gray-600">Medical Records</Link>
+              <Link to="/payment" className="hover:text-blue-500 text-gray-600">Payment</Link>
+              <Link to="/report" className="hover:text-blue-500 text-gray-600">Report</Link>
+              <Link to="/labs" className="hover:text-blue-500 text-gray-600">Lab Sessions</Link>
+              <Link to="/treatments" className="hover:text-blue-500 text-gray-600">Treatment Sessions</Link>
+            </>
+          )}
 
-      <button onClick={logout}>Logout</button>
+          {(role === 'admin' || role === 'staff') && (
+            <>
+              <Link to="/appointments" className="hover:text-blue-500 text-gray-600">Appointments</Link>
+              <Link to="/medical-records" className="hover:text-blue-500 text-gray-600">Medical Records</Link>
+              <Link to="/payment" className="hover:text-blue-500 text-gray-600">Payment</Link>
+              <Link to="/report" className="hover:text-blue-500 text-gray-600">Report</Link>
+              <Link to="/labs" className="hover:text-blue-500 text-gray-600">Lab Sessions</Link>
+              <Link to="/manage-labs" className="hover:text-blue-500 text-gray-600">Manage Labs</Link>
+              <Link to="/treatments" className="hover:text-blue-500 text-gray-600">Treatment Sessions</Link>
+              <Link to="/manage-treatments" className="hover:text-blue-500 text-gray-600">Manage Treatments</Link>
+            </>
+          )}
+        </div>
+
+        {/* Logout Button */}
+        <button
+          onClick={logout}
+          className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors"
+        >
+          Logout
+        </button>
+      </div>
     </nav>
   );
 };

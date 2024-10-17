@@ -11,3 +11,10 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+@media print {
+  /* Hide elements that should not be printed */
+  .no-print {
+      display: none !important;
+  }
+}

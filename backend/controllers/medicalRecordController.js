@@ -1,7 +1,5 @@
 const MedicalRecord = require("../models/MedicalRecord");
 const User = require("../models/User");
-// const admin = require('firebase-admin');
-// const bucket = admin.storage().bucket();
 require("dotenv").config();
 const AWS = require("aws-sdk");
 
@@ -21,7 +19,7 @@ const uploadPDFToS3 = async (buffer, fileName) => {
     Key: `record/${Date.now()}_${fileName}`, // Unique file name
     Body: buffer,
     ACL: "public-read", // File will be publicly accessible
-    ContentType: "application/pdf", // Assuming CVs are PDFs
+    ContentType: "application/pdf",
   };
 
   return s3.upload(params).promise();
@@ -42,35 +40,18 @@ exports.addMedicalRecord = async (req, res) => {
       return res.status(400).json({ message: "No PDF file uploaded" });
     }
 
-    // Upload CV to S3
+    // Upload file to S3
     const uploadResult = await uploadPDFToS3(
       req.file.buffer,
       req.file.originalname
     );
 
-    // Create a new Job record
+    // Create a new medical record
     const newRecord = await MedicalRecord.create({
       patient: user._id,
       record,
-      pdfUrl: uploadResult.Location, // Store the CV URL
+      pdfUrl: uploadResult.Location,
     });
-
-    // Upload PDF to Firebase
-    // const file = req.file;
-    // const firebaseFile = bucket.file(file.originalname);
-    // await firebaseFile.save(file.buffer, {
-    //   metadata: { contentType: file.mimetype },
-    // });
-
-    // Get the public URL of the uploaded PDF
-    // const fileUrl = `https://storage.googleapis.com/${bucket.name}/${file.originalname}`;
-
-    // Create a new medical record for the user
-    // const newRecord = await MedicalRecord.create({
-    //   patient: user._id,
-    //   record,
-    //   pdfUrl: fileUrl,
-    // });
 
     res.status(201).json(newRecord);
   } catch (error) {

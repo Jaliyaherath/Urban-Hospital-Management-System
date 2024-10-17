@@ -1,4 +1,3 @@
-// frontend/src/components/ManageLabAppointments.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -55,18 +54,32 @@ const ManageLabAppointments = () => {
   };
 
   return (
-    <div>
-      <h2>Manage Lab Appointments</h2>
-      <ul>
+    <div className="container mx-auto p-6">
+      <h2 className="text-3xl font-semibold mb-4">Manage Lab Appointments</h2>
+      <ul className="space-y-4">
         {appointments.map((appointment) => (
-          <li key={appointment._id}>
-            {appointment.lab.name} - {appointment.user.name} - ${appointment.totalPrice}
-            <button onClick={() => deleteAppointment(appointment._id)} disabled={loading}>
-              {loading ? 'Deleting...' : 'Delete'}
-            </button>
-            <button onClick={() => updateStatus(appointment._id, 'completed')}>
-              Mark as Completed
-            </button>
+          <li key={appointment._id} className="flex justify-between items-center p-4 bg-white rounded shadow-md">
+            <div className="flex-1">
+              <h3 className="text-xl font-medium">{appointment.lab.name}</h3>
+              <p className="text-gray-600">
+                User: {appointment.user.name} - Price: ${appointment.totalPrice} - Status: {appointment.status}
+              </p>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => deleteAppointment(appointment._id)}
+                disabled={loading}
+                className={`bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {loading ? 'Deleting...' : 'Delete'}
+              </button>
+              <button
+                onClick={() => updateStatus(appointment._id, 'completed')}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+              >
+                Mark as Completed
+              </button>
+            </div>
           </li>
         ))}
       </ul>

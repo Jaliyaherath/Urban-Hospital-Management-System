@@ -50,28 +50,53 @@ const MedicalRecords = () => {
   };
 
   return (
-    <div>
-      <h2>Add Medical Record</h2>
-      <form onSubmit={handleAddRecord}>
+    <div className="max-w-4xl mx-auto mt-8 p-6 bg-white shadow-md rounded-lg">
+      <h2 className="text-2xl font-semibold mb-6 text-gray-800">Add Medical Record</h2>
+      
+      <form onSubmit={handleAddRecord} className="mb-8 space-y-4">
         {/* Textarea for the record */}
-        <textarea
-          value={record}
-          onChange={(e) => setRecord(e.target.value)}
-          placeholder="Enter medical record"
-          required
-        />
+        <div>
+          <label className="block text-gray-700 mb-2">Medical Record</label>
+          <textarea
+            value={record}
+            onChange={(e) => setRecord(e.target.value)}
+            placeholder="Enter medical record"
+            required
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+          />
+        </div>
+
         {/* Input for selecting the PDF file */}
-        <input type="file" accept="application/pdf" onChange={handleFileChange} required />
-        <button type="submit">Add Record</button>
+        <div>
+          <label className="block text-gray-700 mb-2">Upload PDF</label>
+          <input 
+            type="file" 
+            accept="application/pdf" 
+            onChange={handleFileChange} 
+            required
+            className="w-full p-2 border border-gray-300 rounded-md"
+          />
+        </div>
+
+        <button
+          type="submit"
+          className="w-full py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+        >
+          Add Record
+        </button>
       </form>
 
-      <h3>Your Medical Records</h3>
-      <ul>
+      <h3 className="text-xl font-medium mb-4">Your Medical Records</h3>
+      <ul className="space-y-4">
         {records.map((rec) => (
-          <li key={rec._id}>
-            {rec.record} -{' '}
-            {/* Link to view the PDF file */}
-            <a href={rec.pdfUrl} target="_blank" rel="noopener noreferrer">
+          <li key={rec._id} className="p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
+            <p className="text-lg font-medium text-gray-800 mb-2">{rec.record}</p>
+            <a
+              href={rec.pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
               View PDF
             </a>
           </li>

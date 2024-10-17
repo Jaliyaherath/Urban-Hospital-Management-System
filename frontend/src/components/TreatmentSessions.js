@@ -96,13 +96,23 @@ const TreatmentSessions = () => {
   };
 
   return (
-    <div>
-      <h2>Available Treatment Sessions</h2>
-      <ul>
+    <div className="container mx-auto p-6">
+      <h2 className="text-3xl font-semibold mb-4">Available Treatment Sessions</h2>
+      <ul className="space-y-4">
         {treatments.map((treatment) => (
-          <li key={treatment._id}>
-            {treatment.name} - {treatment.category} - ${treatment.price}
-            <button onClick={() => setSelectedTreatment(treatment)}>Book</button>
+          <li key={treatment._id} className="flex justify-between items-center p-4 bg-white rounded shadow-md">
+            <div>
+              <h3 className="text-xl font-medium">{treatment.name}</h3>
+              <p className="text-gray-600">
+                {treatment.category} - ${treatment.price}
+              </p>
+            </div>
+            <button 
+              onClick={() => setSelectedTreatment(treatment)} 
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            >
+              Book
+            </button>
           </li>
         ))}
       </ul>
@@ -117,49 +127,63 @@ const TreatmentSessions = () => {
         </Elements>
       )}
 
-      <h2>Your Treatment Appointments</h2>
-      <ul>
+      <h2 className="text-3xl font-semibold mb-4 mt-8">Your Treatment Appointments</h2>
+      <ul className="space-y-4">
         {userAppointments.map((appointment) => (
-          <li key={appointment._id}>
-            {appointment.treatment.name} - ${appointment.totalPrice} - {new Date(appointment.startTime).toLocaleString()} - {appointment.status}
+          <li key={appointment._id} className="flex justify-between items-center p-4 bg-white rounded shadow-md">
+            <div>
+              <h3 className="text-xl font-medium">{appointment.treatment.name}</h3>
+              <p className="text-gray-600">
+                ${appointment.totalPrice} - {new Date(appointment.startTime).toLocaleString()} - {appointment.status}
+              </p>
+            </div>
           </li>
         ))}
       </ul>
 
       {isAdmin && (
-        <div>
-          <h2>Create New Treatment Session</h2>
-          <label>Treatment Name:</label>
+        <div className="mt-8 p-4 bg-white rounded shadow-md">
+          <h2 className="text-3xl font-semibold mb-4">Create New Treatment Session</h2>
+          <label className="block mb-2">Treatment Name:</label>
           <input
             type="text"
             value={treatmentName}
             onChange={(e) => setTreatmentName(e.target.value)}
+            className="border p-2 mb-4 w-full rounded"
           />
-          <label>Category:</label>
+          <label className="block mb-2">Category:</label>
           <input
             type="text"
             value={treatmentCategory}
             onChange={(e) => setTreatmentCategory(e.target.value)}
+            className="border p-2 mb-4 w-full rounded"
           />
-          <label>Price:</label>
+          <label className="block mb-2">Price:</label>
           <input
             type="number"
             value={treatmentPrice}
             onChange={(e) => setTreatmentPrice(e.target.value)}
+            className="border p-2 mb-4 w-full rounded"
           />
-          <label>Description:</label>
+          <label className="block mb-2">Description:</label>
           <input
             type="text"
             value={treatmentDescription}
             onChange={(e) => setTreatmentDescription(e.target.value)}
+            className="border p-2 mb-4 w-full rounded"
           />
-          <label>Availability:</label>
+          <label className="block mb-2">Availability:</label>
           <input
             type="datetime-local"
             value={availability}
             onChange={(e) => setAvailability(e.target.value)}
+            className="border p-2 mb-4 w-full rounded"
           />
-          <button onClick={createTreatmentSession} disabled={loading}>
+          <button 
+            onClick={createTreatmentSession} 
+            disabled={loading}
+            className={`bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
             {loading ? 'Creating...' : 'Create Treatment Session'}
           </button>
         </div>
@@ -230,31 +254,39 @@ const TreatmentBookingForm = ({ selectedTreatment, setSelectedTreatment, fetchUs
   };
 
   return (
-    <div>
-      <h3>Book Treatment: {selectedTreatment.name}</h3>
-      <label>Start Time:</label>
+    <div className="mt-8 p-4 bg-white rounded shadow-md">
+      <h3 className="text-2xl font-semibold mb-4">Book Treatment: {selectedTreatment.name}</h3>
+      <label className="block mb-2">Start Time:</label>
       <input
         type="datetime-local"
         value={startTime}
         onChange={(e) => setStartTime(e.target.value)}
+        className="border p-2 mb-4 w-full rounded"
       />
-      <label>End Time:</label>
+      <label className="block mb-2">End Time:</label>
       <input
         type="datetime-local"
         value={endTime}
         onChange={(e) => setEndTime(e.target.value)}
+        className="border p-2 mb-4 w-full rounded"
       />
 
-      <CardElement />
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <CardElement className="mb-4" />
+      {error && <p className="text-red-600">{error}</p>}
       <button
         onClick={() => bookAppointment(selectedTreatment._id, selectedTreatment.price)}
         disabled={loading || !stripe}
+        className={`bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {loading ? 'Booking...' : 'Confirm Booking & Pay'}
       </button>
 
-      <button onClick={() => setSelectedTreatment(null)}>Cancel</button>
+      <button 
+        onClick={() => setSelectedTreatment(null)} 
+        className="ml-4 text-gray-600 underline"
+      >
+        Cancel
+      </button>
     </div>
   );
 };

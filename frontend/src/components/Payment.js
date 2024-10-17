@@ -1,4 +1,3 @@
-// frontend/src/components/Payment.js
 import React, { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -39,10 +38,27 @@ const CheckoutForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <CardElement />
-      <button type="submit" disabled={!stripe}>Pay $50</button>
-      {paymentStatus && <p>{paymentStatus}</p>}
+    <form onSubmit={handleSubmit} className="max-w-md mx-auto bg-white p-6 shadow-lg rounded-lg space-y-4 w-96"> {/* Increased width */}
+      {/* Card Element */}
+      <div className="border border-gray-300 p-4 rounded-md">
+        <CardElement className="p-2" />
+      </div>
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        disabled={!stripe}
+        className="w-full bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 transition-colors"
+      >
+        Pay $50
+      </button>
+
+      {/* Payment Status Message */}
+      {paymentStatus && (
+        <p className={`text-center mt-4 ${paymentStatus.includes('success') ? 'text-green-500' : 'text-red-500'}`}>
+          {paymentStatus}
+        </p>
+      )}
     </form>
   );
 };
@@ -50,7 +66,9 @@ const CheckoutForm = () => {
 const Payment = () => {
   return (
     <Elements stripe={stripePromise}>
-      <CheckoutForm />
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <CheckoutForm />
+      </div>
     </Elements>
   );
 };

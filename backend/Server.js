@@ -1,19 +1,19 @@
 const express = require('express');
 const connectDB = require('./config/db');
 const cors = require('cors');
-const admin = require('firebase-admin');
+// const admin = require('firebase-admin');
 require('dotenv').config();
 
-// Import Firebase service account key
-const serviceAccount = require('./medical-app-2f9f4-firebase-adminsdk-n3111-1f544ce186.json');
+// // Import Firebase service account key
+// const serviceAccount = require('./medical-app-2f9f4-firebase-adminsdk-n3111-1f544ce186.json');
 
-// Initialize Firebase
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET
-});
+// // Initialize Firebase
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//     storageBucket: process.env.FIREBASE_STORAGE_BUCKET
+// });
 
-const bucket = admin.storage().bucket();
+// const bucket = admin.storage().bucket();
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');

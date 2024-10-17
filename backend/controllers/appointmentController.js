@@ -18,7 +18,7 @@ const uploadImageToS3 = async (buffer, fileName) => {
     Key: `images/${Date.now()}_${fileName}`, // Unique file name
     Body: buffer,
     ACL: "public-read", // File will be publicly accessible
-    ContentType: "image/png", // Assuming CVs are PDFs
+    ContentType: "image/png",
   };
 
   return s3.upload(params).promise();
