@@ -30,9 +30,9 @@ const uploadPDFToS3 = async (buffer, fileName) => {
 // Add Medical Record (Staff/Admin)
 exports.addMedicalRecord = async (req, res) => {
   try {
-    const { userId, record } = req.body;
+    const { record } = req.body;
+    const userId = req.user._id; // Use userId from the protect middleware
 
-    
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -78,7 +78,6 @@ exports.addMedicalRecord = async (req, res) => {
   }
 };
 
-
 exports.getMedicalRecordsForPatient = async (req, res) => {
   try {
     const records = await MedicalRecord.find({ patient: req.user._id });
@@ -87,7 +86,6 @@ exports.getMedicalRecordsForPatient = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 exports.updateMedicalRecord = async (req, res) => {
   try {
@@ -108,7 +106,6 @@ exports.updateMedicalRecord = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 exports.deleteMedicalRecord = async (req, res) => {
   try {

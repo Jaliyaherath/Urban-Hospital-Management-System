@@ -34,7 +34,7 @@ const MedicalRecords = () => {
 
     const formData = new FormData();
     formData.append('record', record); // Append the text record
-    formData.append('pdfFile', pdfFile); // Append the selected PDF file
+    formData.append('pdfUrl', pdfFile); // Append the selected PDF file
 
     try {
       await axios.post('http://localhost:5000/api/medical-records/add', formData, {
