@@ -5,6 +5,7 @@ const {
   getAvailableTreatments,
   bookTreatmentSession,
   getUserBookings,
+  bookTreatmentSessionWithPayment,
   manageBookings
 } = require('../controllers/treatmentController');
 
@@ -15,7 +16,7 @@ router.post('/create', protect, restrictTo('staff', 'admin'), createTreatmentSes
 
 // Route for users to view and book treatment sessions
 router.get('/available', protect, getAvailableTreatments);
-router.post('/book', protect, bookTreatmentSession);
+//router.post('/book', protect, bookTreatmentSession);
 
 // Routes for users to view their own bookings
 router.get('/my-appointments', protect, getUserBookings);
@@ -23,4 +24,5 @@ router.get('/my-appointments', protect, getUserBookings);
 // Routes for staff/admin to view, update, and delete bookings
 router.get('/manage-appointments', protect, restrictTo('staff', 'admin'), manageBookings);
 
+router.post('/book-with-payment', protect, bookTreatmentSessionWithPayment);
 module.exports = router;
