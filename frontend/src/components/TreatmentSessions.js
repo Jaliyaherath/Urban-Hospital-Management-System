@@ -12,6 +12,9 @@ const TreatmentSessions = () => {
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   // Form states for creating a treatment session
   const [treatmentName, setTreatmentName] = useState('');
   const [treatmentCategory, setTreatmentCategory] = useState('');
@@ -77,18 +80,19 @@ const TreatmentSessions = () => {
           price: treatmentPrice, 
           description: treatmentDescription, 
           services: [], 
-          availability: new Date(availability) // Ensure availability is included
+          availability: new Date(availability)
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert('Treatment session created successfully');
       setLoading(false);
-      // Clear the form
       setTreatmentName('');
       setTreatmentCategory('');
       setTreatmentPrice('');
       setTreatmentDescription('');
-      setAvailability(''); // Clear availability
+      setAvailability('');
+      setIsCreateModalOpen(false); // Close modal on success
+      window.location.reload();
     } catch (error) {
       console.error('Error creating treatment session:', error.response.data.message);
       setLoading(false);
@@ -108,7 +112,7 @@ const TreatmentSessions = () => {
               </p>
             </div>
             <button 
-              onClick={() => setSelectedTreatment(treatment)} 
+              onClick={() => { setSelectedTreatment(treatment); setIsBookingModalOpen(true); }} 
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
             >
               Book
@@ -117,14 +121,26 @@ const TreatmentSessions = () => {
         ))}
       </ul>
 
-      {selectedTreatment && (
-        <Elements stripe={stripePromise}>
-          <TreatmentBookingForm
-            selectedTreatment={selectedTreatment}
-            setSelectedTreatment={setSelectedTreatment}
-            fetchUserAppointments={fetchUserAppointments}
-          />
-        </Elements>
+      {/* Booking Modal */}
+      {isBookingModalOpen && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-1/2">
+            <button
+              className="text-gray-500 hover:text-gray-800 float-right text-lg font-bold"
+              onClick={() => setIsBookingModalOpen(false)}
+            >
+              &times;
+            </button>
+            <Elements stripe={stripePromise}>
+              <TreatmentBookingForm
+                selectedTreatment={selectedTreatment}
+                setSelectedTreatment={setSelectedTreatment}
+                fetchUserAppointments={fetchUserAppointments}
+                setIsBookingModalOpen={setIsBookingModalOpen} // Close modal on successful booking
+              />
+            </Elements>
+          </div>
+        </div>
       )}
 
       <h2 className="text-3xl font-semibold mb-4 mt-8">Your Treatment Appointments</h2>
@@ -142,57 +158,77 @@ const TreatmentSessions = () => {
       </ul>
 
       {isAdmin && (
-        <div className="mt-8 p-4 bg-white rounded shadow-md">
-          <h2 className="text-3xl font-semibold mb-4">Create New Treatment Session</h2>
-          <label className="block mb-2">Treatment Name:</label>
-          <input
-            type="text"
-            value={treatmentName}
-            onChange={(e) => setTreatmentName(e.target.value)}
-            className="border p-2 mb-4 w-full rounded"
-          />
-          <label className="block mb-2">Category:</label>
-          <input
-            type="text"
-            value={treatmentCategory}
-            onChange={(e) => setTreatmentCategory(e.target.value)}
-            className="border p-2 mb-4 w-full rounded"
-          />
-          <label className="block mb-2">Price:</label>
-          <input
-            type="number"
-            value={treatmentPrice}
-            onChange={(e) => setTreatmentPrice(e.target.value)}
-            className="border p-2 mb-4 w-full rounded"
-          />
-          <label className="block mb-2">Description:</label>
-          <input
-            type="text"
-            value={treatmentDescription}
-            onChange={(e) => setTreatmentDescription(e.target.value)}
-            className="border p-2 mb-4 w-full rounded"
-          />
-          <label className="block mb-2">Availability:</label>
-          <input
-            type="datetime-local"
-            value={availability}
-            onChange={(e) => setAvailability(e.target.value)}
-            className="border p-2 mb-4 w-full rounded"
-          />
-          <button 
-            onClick={createTreatmentSession} 
-            disabled={loading}
-            className={`bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        <div className="mt-8">
+          <button
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+            onClick={() => setIsCreateModalOpen(true)}
           >
-            {loading ? 'Creating...' : 'Create Treatment Session'}
+            Create New Treatment Session
           </button>
+        </div>
+      )}
+
+      {/* Create Treatment Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-1/2">
+            <button
+              className="text-gray-500 hover:text-gray-800 float-right text-lg font-bold"
+              onClick={() => setIsCreateModalOpen(false)}
+            >
+              &times;
+            </button>
+            <h2 className="text-2xl font-semibold mb-4">Create New Treatment Session</h2>
+            <label className="block mb-2">Treatment Name:</label>
+            <input
+              type="text"
+              value={treatmentName}
+              onChange={(e) => setTreatmentName(e.target.value)}
+              className="border p-2 mb-4 w-full rounded"
+            />
+            <label className="block mb-2">Category:</label>
+            <input
+              type="text"
+              value={treatmentCategory}
+              onChange={(e) => setTreatmentCategory(e.target.value)}
+              className="border p-2 mb-4 w-full rounded"
+            />
+            <label className="block mb-2">Price:</label>
+            <input
+              type="number"
+              value={treatmentPrice}
+              onChange={(e) => setTreatmentPrice(e.target.value)}
+              className="border p-2 mb-4 w-full rounded"
+            />
+            <label className="block mb-2">Description:</label>
+            <input
+              type="text"
+              value={treatmentDescription}
+              onChange={(e) => setTreatmentDescription(e.target.value)}
+              className="border p-2 mb-4 w-full rounded"
+            />
+            <label className="block mb-2">Availability:</label>
+            <input
+              type="datetime-local"
+              value={availability}
+              onChange={(e) => setAvailability(e.target.value)}
+              className="border p-2 mb-4 w-full rounded"
+            />
+            <button
+              onClick={createTreatmentSession}
+              disabled={loading}
+              className={`bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {loading ? 'Creating...' : 'Create Treatment Session'}
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-const TreatmentBookingForm = ({ selectedTreatment, setSelectedTreatment, fetchUserAppointments }) => {
+const TreatmentBookingForm = ({ selectedTreatment, setSelectedTreatment, fetchUserAppointments, setIsBookingModalOpen }) => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [loading, setLoading] = useState(false);
@@ -211,7 +247,6 @@ const TreatmentBookingForm = ({ selectedTreatment, setSelectedTreatment, fetchUs
         return;
       }
 
-      // Create payment method
       const paymentMethodResponse = await stripe.createPaymentMethod({
         type: 'card',
         card: cardElement,
@@ -223,10 +258,6 @@ const TreatmentBookingForm = ({ selectedTreatment, setSelectedTreatment, fetchUs
         return;
       }
 
-      // Log the paymentMethodId for debugging
-      console.log('PaymentMethodId:', paymentMethodResponse.paymentMethod.id);
-
-      // Send paymentMethodId and booking data to the server
       const token = localStorage.getItem('token');
       const response = await axios.post(
         'http://localhost:5000/api/treatments/book-with-payment',
@@ -243,7 +274,8 @@ const TreatmentBookingForm = ({ selectedTreatment, setSelectedTreatment, fetchUs
       alert('Appointment booked and payment successful');
       setLoading(false);
       setSelectedTreatment(null); // Reset selected treatment
-      fetchUserAppointments(); // Fetch user appointments after booking
+      fetchUserAppointments();
+      setIsBookingModalOpen(false); // Close modal on success
     } catch (error) {
       setError(
         error.response?.data?.message ||
@@ -254,7 +286,7 @@ const TreatmentBookingForm = ({ selectedTreatment, setSelectedTreatment, fetchUs
   };
 
   return (
-    <div className="mt-8 p-4 bg-white rounded shadow-md">
+    <div className="mt-4">
       <h3 className="text-2xl font-semibold mb-4">Book Treatment: {selectedTreatment.name}</h3>
       <label className="block mb-2">Start Time:</label>
       <input
@@ -280,9 +312,8 @@ const TreatmentBookingForm = ({ selectedTreatment, setSelectedTreatment, fetchUs
       >
         {loading ? 'Booking...' : 'Confirm Booking & Pay'}
       </button>
-
       <button 
-        onClick={() => setSelectedTreatment(null)} 
+        onClick={() => setIsBookingModalOpen(false)} 
         className="ml-4 text-gray-600 underline"
       >
         Cancel

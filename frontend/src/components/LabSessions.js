@@ -11,6 +11,7 @@ const LabSessions = () => {
   const [userAppointments, setUserAppointments] = useState([]);
   const [isAdminOrStaff, setIsAdminOrStaff] = useState(false); // Role checking for admin/staff
   const [newLab, setNewLab] = useState({ name: '', category: '', price: 0, description: '' });
+  const [isModalOpen, setIsModalOpen] = useState(false); // For handling the booking modal
 
   // Fetch available lab sessions
   useEffect(() => {
@@ -74,6 +75,12 @@ const LabSessions = () => {
     }
   };
 
+  // Open modal to book lab
+  const handleBookLab = (lab) => {
+    setSelectedLab(lab);
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="container mx-auto p-6">
       <h2 className="text-3xl font-semibold mb-4">Available Lab Sessions</h2>
@@ -85,7 +92,7 @@ const LabSessions = () => {
               <p>{lab.category} - ${lab.price}</p>
             </div>
             <button
-              onClick={() => setSelectedLab(lab)}
+              onClick={() => handleBookLab(lab)}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
             >
               Book
@@ -94,14 +101,17 @@ const LabSessions = () => {
         ))}
       </ul>
 
-      {selectedLab && (
-        <Elements stripe={stripePromise}>
-          <LabBookingForm
-            selectedLab={selectedLab}
-            setSelectedLab={setSelectedLab}
-            fetchUserAppointments={fetchUserAppointments} // Pass fetchUserAppointments to update appointments after booking
-          />
-        </Elements>
+      {/* Conditionally render the modal for booking */}
+      {isModalOpen && selectedLab && (
+        <Modal setIsModalOpen={setIsModalOpen}>
+          <Elements stripe={stripePromise}>
+            <LabBookingForm
+              selectedLab={selectedLab}
+              setIsModalOpen={setIsModalOpen}
+              fetchUserAppointments={fetchUserAppointments} // Pass fetchUserAppointments to update appointments after booking
+            />
+          </Elements>
+        </Modal>
       )}
 
       <h2 className="text-3xl font-semibold my-6">Your Lab Appointments</h2>
@@ -160,7 +170,24 @@ const LabSessions = () => {
   );
 };
 
-const LabBookingForm = ({ selectedLab, setSelectedLab, fetchUserAppointments }) => {
+// Modal component to handle pop-up
+const Modal = ({ children, setIsModalOpen }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
+        {children}
+        <button
+          onClick={() => setIsModalOpen(false)}
+          className="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition w-full max-w-md"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const LabBookingForm = ({ selectedLab, setIsModalOpen, fetchUserAppointments }) => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [loading, setLoading] = useState(false);
@@ -191,9 +218,6 @@ const LabBookingForm = ({ selectedLab, setSelectedLab, fetchUserAppointments }) 
         return;
       }
 
-      // Log the paymentMethodId for debugging
-      console.log('PaymentMethodId:', paymentMethodResponse.paymentMethod.id);
-
       // Send paymentMethodId and booking data to the server
       const token = localStorage.getItem('token');
       const response = await axios.post(
@@ -209,7 +233,7 @@ const LabBookingForm = ({ selectedLab, setSelectedLab, fetchUserAppointments }) 
 
       alert('Appointment booked and payment successful');
       setLoading(false);
-      setSelectedLab(null); // Reset selected lab
+      setIsModalOpen(false); // Close the modal
       fetchUserAppointments(); // Fetch user appointments after booking
     } catch (error) {
       setError(
@@ -221,7 +245,7 @@ const LabBookingForm = ({ selectedLab, setSelectedLab, fetchUserAppointments }) 
   };
 
   return (
-    <div className="p-6 bg-white rounded shadow-md">
+    <div>
       <h3 className="text-2xl font-semibold mb-4">Book Lab: {selectedLab.name}</h3>
       <label className="block mb-2">Start Time:</label>
       <input
@@ -246,13 +270,6 @@ const LabBookingForm = ({ selectedLab, setSelectedLab, fetchUserAppointments }) 
         className={`w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {loading ? 'Booking...' : 'Confirm Booking & Pay'}
-      </button>
-
-      <button
-        onClick={() => setSelectedLab(null)}
-        className="w-full mt-2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
-      >
-        Cancel
       </button>
     </div>
   );
