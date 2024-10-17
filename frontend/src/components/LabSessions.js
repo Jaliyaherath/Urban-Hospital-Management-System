@@ -1,6 +1,9 @@
-// frontend/src/components/LabSessions.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY); // Load the publishable key
 
 const LabSessions = () => {
   const [labs, setLabs] = useState([]);
@@ -9,14 +12,9 @@ const LabSessions = () => {
   const [endTime, setEndTime] = useState('');
   const [userAppointments, setUserAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false); // Add state to track if the user is an admin
+  const [isAdminOrStaff, setIsAdminOrStaff] = useState(false); // Role checking for admin/staff
+  const [newLab, setNewLab] = useState({ name: '', category: '', price: 0, description: '' });
 
-  // Form states for creating a lab session
-  const [labName, setLabName] = useState('');
-  const [labCategory, setLabCategory] = useState('');
-  const [labPrice, setLabPrice] = useState('');
-  const [labDescription, setLabDescription] = useState('');
-  
   // Fetch available lab sessions
   useEffect(() => {
     const fetchLabs = async () => {
@@ -30,75 +28,52 @@ const LabSessions = () => {
       }
     };
     fetchLabs();
-  }, []);
-
-  // Fetch user’s lab appointments
-  useEffect(() => {
-    const fetchUserAppointments = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/labs/my-appointments', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        setUserAppointments(response.data);
-      } catch (error) {
-        console.error('Error fetching user appointments:', error);
-      }
-    };
-    fetchUserAppointments();
-  }, []);
-
-  // Fetch user role (to determine if user is admin or staff)
-  useEffect(() => {
-    const checkUserRole = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/auth/me', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        setIsAdmin(response.data.role === 'admin' || response.data.role === 'staff');
-      } catch (error) {
-        console.error('Error fetching user role:', error);
-      }
-    };
     checkUserRole();
+    fetchUserAppointments(); // Fetch user appointments on component mount
   }, []);
 
-  // Book a lab appointment
-  const bookAppointment = async (labId) => {
-    setLoading(true);
+  // Check if the user is an admin or hospital staff
+  const checkUserRole = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/labs/book', 
-        { labId, startTime, endTime },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      alert('Appointment booked successfully');
-      setLoading(false);
-      setSelectedLab(null); // Reset selected lab
+      const response = await axios.get('http://localhost:5000/api/auth/me', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const role = response.data.role;
+      if (role === 'Admin' || role === 'hospitalStaff') {
+        setIsAdminOrStaff(true);
+      }
     } catch (error) {
-      console.error('Error booking appointment:', error.response.data.message);
-      setLoading(false);
+      console.error('Error checking user role:', error);
     }
   };
 
-  // Create a lab session (Admin and Staff only)
-  const createLabSession = async () => {
-    setLoading(true);
+  // Fetch user appointments
+  const fetchUserAppointments = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/labs/create', 
-        { name: labName, category: labCategory, price: labPrice, description: labDescription },
+      const response = await axios.get('http://localhost:5000/api/labs/my-appointments', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUserAppointments(response.data);
+    } catch (error) {
+      console.error('Error fetching user appointments:', error);
+    }
+  };
+
+  // Handle lab session creation
+  const createLabSession = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        'http://localhost:5000/api/labs',
+        { ...newLab },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert('Lab session created successfully');
-      setLoading(false);
-      // Clear the form
-      setLabName('');
-      setLabCategory('');
-      setLabPrice('');
-      setLabDescription('');
+      setLabs([...labs, response.data]); // Add the new lab to the labs list
+      setNewLab({ name: '', category: '', price: 0, description: '' });
     } catch (error) {
-      console.error('Error creating lab session:', error.response.data.message);
-      setLoading(false);
+      console.error('Error creating lab session:', error.response?.data?.message || error.message);
     }
   };
 
@@ -115,25 +90,13 @@ const LabSessions = () => {
       </ul>
 
       {selectedLab && (
-        <div>
-          <h3>Book Lab: {selectedLab.name}</h3>
-          <label>Start Time:</label>
-          <input
-            type="datetime-local"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
+        <Elements stripe={stripePromise}>
+          <LabBookingForm
+            selectedLab={selectedLab}
+            setSelectedLab={setSelectedLab}
+            fetchUserAppointments={fetchUserAppointments} // Pass fetchUserAppointments to update appointments after booking
           />
-          <label>End Time:</label>
-          <input
-            type="datetime-local"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-          />
-          <button onClick={() => bookAppointment(selectedLab._id)} disabled={loading}>
-            {loading ? 'Booking...' : 'Confirm Booking'}
-          </button>
-          <button onClick={() => setSelectedLab(null)}>Cancel</button>
-        </div>
+        </Elements>
       )}
 
       <h2>Your Lab Appointments</h2>
@@ -145,39 +108,127 @@ const LabSessions = () => {
         ))}
       </ul>
 
-      {/* Show lab session creation form only for admins and staff */}
-      {isAdmin && (
+      {/* Conditionally render lab creation form if user is Admin or hospitalStaff */}
+      {isAdminOrStaff && (
         <div>
-          <h2>Create New Lab Session</h2>
-          <label>Lab Name:</label>
+          <h2>Create a New Lab Session</h2>
+          <label>Name:</label>
           <input
             type="text"
-            value={labName}
-            onChange={(e) => setLabName(e.target.value)}
+            value={newLab.name}
+            onChange={(e) => setNewLab({ ...newLab, name: e.target.value })}
           />
           <label>Category:</label>
           <input
             type="text"
-            value={labCategory}
-            onChange={(e) => setLabCategory(e.target.value)}
+            value={newLab.category}
+            onChange={(e) => setNewLab({ ...newLab, category: e.target.value })}
           />
           <label>Price:</label>
           <input
             type="number"
-            value={labPrice}
-            onChange={(e) => setLabPrice(e.target.value)}
+            value={newLab.price}
+            onChange={(e) => setNewLab({ ...newLab, price: parseFloat(e.target.value) })}
           />
           <label>Description:</label>
           <input
             type="text"
-            value={labDescription}
-            onChange={(e) => setLabDescription(e.target.value)}
+            value={newLab.description}
+            onChange={(e) => setNewLab({ ...newLab, description: e.target.value })}
           />
-          <button onClick={createLabSession} disabled={loading}>
-            {loading ? 'Creating...' : 'Create Lab Session'}
-          </button>
+          <button onClick={createLabSession}>Create Lab Session</button>
         </div>
       )}
+    </div>
+  );
+};
+
+const LabBookingForm = ({ selectedLab, setSelectedLab, fetchUserAppointments }) => {
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const stripe = useStripe();
+  const elements = useElements();
+
+  const bookAppointment = async (labId) => {
+    setLoading(true);
+    try {
+      const cardElement = elements.getElement(CardElement);
+
+      if (!stripe || !cardElement) {
+        setError('Stripe has not loaded');
+        setLoading(false);
+        return;
+      }
+
+      // Create payment method
+      const paymentMethodResponse = await stripe.createPaymentMethod({
+        type: 'card',
+        card: cardElement,
+      });
+
+      if (paymentMethodResponse.error) {
+        setError(paymentMethodResponse.error.message);
+        setLoading(false);
+        return;
+      }
+
+      // Log the paymentMethodId for debugging
+      console.log('PaymentMethodId:', paymentMethodResponse.paymentMethod.id);
+
+      // Send paymentMethodId and booking data to the server
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        'http://localhost:5000/api/labs/book-with-payment',
+        {
+          labId,
+          startTime,
+          endTime,
+          paymentMethodId: paymentMethodResponse.paymentMethod.id,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      alert('Appointment booked and payment successful');
+      setLoading(false);
+      setSelectedLab(null); // Reset selected lab
+      fetchUserAppointments(); // Fetch user appointments after booking
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+        'Error booking appointment or processing payment'
+      );
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <h3>Book Lab: {selectedLab.name}</h3>
+      <label>Start Time:</label>
+      <input
+        type="datetime-local"
+        value={startTime}
+        onChange={(e) => setStartTime(e.target.value)}
+      />
+      <label>End Time:</label>
+      <input
+        type="datetime-local"
+        value={endTime}
+        onChange={(e) => setEndTime(e.target.value)}
+      />
+
+      <CardElement />
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <button
+        onClick={() => bookAppointment(selectedLab._id)} // Remove price parameter
+        disabled={loading || !stripe}
+      >
+        {loading ? 'Booking...' : 'Confirm Booking & Pay'}
+      </button>
+
+      <button onClick={() => setSelectedLab(null)}>Cancel</button>
     </div>
   );
 };

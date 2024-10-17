@@ -12,6 +12,11 @@ import ManageLabAppointments from './components/ManageLabAppointments';
 import TreatmentSessions from './components/TreatmentSessions'; 
 import ManageTreatmentAppointments from './components/ManageTreatmentAppointments';
 import axios from 'axios';
+import { Elements } from '@stripe/react-stripe-js'; // Import Elements provider
+import { loadStripe } from '@stripe/stripe-js'; // Import loadStripe
+
+// Load Stripe with your public key
+const stripePromise = loadStripe('pk_test_51PFSlzRpw8vaDdMypqhR3unSrqswKo7QwWQzQkTsGfif5QnvD9VDtknFp0YWGfkKIiPwNNVZcv4ah61b1dkm8qbn00kvlfodaQ');
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -49,8 +54,15 @@ const App = () => {
             <Route path="/medical-records" element={<MedicalRecords />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/report" element={<Report />} />
-            <Route path="/labs" element={<LabSessions />} />
+
+            {/* Wrap the components using Stripe in the Elements provider */}
+            <Route path="/labs" element={
+              <Elements stripe={stripePromise}>
+                <LabSessions />
+              </Elements>
+            } />
             <Route path="/manage-labs" element={<ManageLabAppointments />} />
+
             <Route path="/treatments" element={<TreatmentSessions />} />
             <Route path="/manage-treatments" element={<ManageTreatmentAppointments />} />
           </Routes>
