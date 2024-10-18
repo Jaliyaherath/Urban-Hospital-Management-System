@@ -101,7 +101,7 @@ const Appointments = () => {
         formData.append('picture', picture);
       }
 
-      await axios.patch(
+      await axios.put(
         `http://localhost:5000/api/appointments/${editingAppointment._id}`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }

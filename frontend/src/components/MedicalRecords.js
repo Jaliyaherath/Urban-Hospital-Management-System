@@ -5,6 +5,8 @@ const MedicalRecords = () => {
   const [records, setRecords] = useState([]); // State to store medical records
   const [record, setRecord] = useState('');   // State to store the record text input
   const [pdfFile, setPdfFile] = useState(null); // State to store the selected PDF file
+  const [successMessage, setSuccessMessage] = useState(''); // State for success message
+  const [errorMessage, setErrorMessage] = useState(''); // State for error message
 
   // Function to fetch medical records for the patient
   const fetchRecords = async () => {
@@ -31,6 +33,10 @@ const MedicalRecords = () => {
   // Handle form submission to add a medical record
   const handleAddRecord = async (e) => {
     e.preventDefault();
+    
+    // Clear any previous alerts
+    setSuccessMessage('');
+    setErrorMessage('');
 
     const formData = new FormData();
     formData.append('record', record); // Append the text record
@@ -43,9 +49,23 @@ const MedicalRecords = () => {
           'Content-Type': 'multipart/form-data', // Ensure proper content type for file upload
         },
       });
+      setSuccessMessage('Medical record added successfully!'); // Set success message
       fetchRecords(); // Refresh the records list after adding a new record
+      setRecord(''); // Clear form input
+      setPdfFile(null); // Clear the file input
+      
+      // Automatically clear the error message after 5 seconds
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 2000);
+
     } catch (error) {
-      console.error(error); // Log error if any
+      setErrorMessage('Failed to add the medical record. Please try again.'); // Set error message
+       // Automatically clear the error message after 5 seconds
+       setTimeout(() => {
+        setErrorMessage('');
+      }, 2000);
+      console.error(error);
     }
   };
 
@@ -53,6 +73,20 @@ const MedicalRecords = () => {
     <div className="max-w-4xl mx-auto mt-8 p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-semibold mb-6 text-gray-800">Add Medical Record</h2>
       
+      {/* Success Alert */}
+      {successMessage && (
+        <div className="mb-6 p-4 bg-green-100 text-green-700 border border-green-300 rounded-md">
+          {successMessage}
+        </div>
+      )}
+
+      {/* Error Alert */}
+      {errorMessage && (
+        <div className="mb-6 p-4 bg-red-100 text-red-700 border border-red-300 rounded-md">
+          {errorMessage}
+        </div>
+      )}
+
       <form onSubmit={handleAddRecord} className="mb-8 space-y-4">
         {/* Textarea for the record */}
         <div>

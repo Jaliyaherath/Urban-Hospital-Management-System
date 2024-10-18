@@ -21,7 +21,7 @@ router.get('/patient', protect, restrictTo('user'), getAppointmentsForPatient);
 router.get('/staff', protect, restrictTo('staff', 'admin'), getAppointmentsForHospitalStaff);
 
 // Hospital staff updates user appointments
-router.patch('/:id', protect, restrictTo('staff', 'admin'), updateAppointment);
+router.put('/:id', protect, restrictTo('staff', 'admin'), upload.single('picture'), updateAppointment);
 
 // Admin deletes appointments
 router.delete('/:id', protect, restrictTo('admin'), deleteAppointment);

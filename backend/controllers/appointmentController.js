@@ -71,12 +71,33 @@ exports.getAppointmentsForHospitalStaff = async (req, res) => {
 
 exports.updateAppointment = async (req, res) => {
   try {
-    const appointment = await Appointment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { hospital, date } = req.body;
+
+    const appointment = await Appointment.findById(req.params.id);
     if (!appointment) {
       return res.status(404).json({ message: 'Appointment not found' });
     }
-    res.status(200).json(appointment);
+
+    const updatedData = { hospital, date };
+
+    if (req.file) {
+      const uploadResult = await uploadImageToS3(
+        req.file.buffer,
+        req.file.originalname
+      );
+
+      updatedData.picture = uploadResult.Location;
+    }
+
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      updatedData,
+      { new: true }
+    );
+
+    res.status(200).json(updatedAppointment);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
 };
