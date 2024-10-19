@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Auth = ({ setUser }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -7,7 +8,8 @@ const Auth = ({ setUser }) => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+  const [messageType, setMessageType] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,8 +20,15 @@ const Auth = ({ setUser }) => {
       const response = await axios.post(url, data);
       localStorage.setItem('token', response.data.token);
       setUser(response.data);
-      setMessage('Success!'); // Success message
+      setMessage('Success!');
       setMessageType('success');
+
+      // Navigate to QR code page for user role
+      if (response.data.role === 'user') {
+        navigate('/qr-code', { state: { qrCode: response.data.token } });
+      } else {
+        navigate('/home');
+      }
     } catch (error) {
       console.error('Error:', error.response.data.message);
       setMessage(error.response.data.message); // Error message

@@ -1,4 +1,3 @@
-// frontend/src/App.js
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Auth from './components/Auth';
@@ -11,9 +10,10 @@ import LabSessions from './components/LabSessions';
 import ManageLabAppointments from './components/ManageLabAppointments';
 import TreatmentSessions from './components/TreatmentSessions'; 
 import ManageTreatmentAppointments from './components/ManageTreatmentAppointments';
+import QRCodePage from './components/QRCodePage';
 import axios from 'axios';
-import { Elements } from '@stripe/react-stripe-js'; // Import Elements provider
-import { loadStripe } from '@stripe/stripe-js'; // Import loadStripe
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js'; 
 
 // Load Stripe with your public key
 const stripePromise = loadStripe('pk_test_51PFSlzRpw8vaDdMypqhR3unSrqswKo7QwWQzQkTsGfif5QnvD9VDtknFp0YWGfkKIiPwNNVZcv4ah61b1dkm8qbn00kvlfodaQ');
@@ -65,6 +65,9 @@ const App = () => {
 
             <Route path="/treatments" element={<TreatmentSessions />} />
             <Route path="/manage-treatments" element={<ManageTreatmentAppointments />} />
+
+            {/* QR Code Page Route */}
+            <Route path="/qr-code" element={<QRCodePage />} />
           </Routes>
         </>
       )}
