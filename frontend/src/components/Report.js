@@ -65,6 +65,14 @@ const Report = () => {
                   <td className="border border-gray-300 px-4 py-2">Total Medical Records</td>
                   <td className="border border-gray-300 px-4 py-2">{report.totalMedicalRecords}</td>
                 </tr>
+                <tr className="hover:bg-gray-100 transition-colors">
+                  <td className="border border-gray-300 px-4 py-2">Total Lab Appointments</td>
+                  <td className="border border-gray-300 px-4 py-2">{report.totalLabRecords}</td>
+                </tr>
+                <tr className="hover:bg-gray-100 transition-colors">
+                  <td className="border border-gray-300 px-4 py-2">Total Treatment Appointments</td>
+                  <td className="border border-gray-300 px-4 py-2">{report.totalLabRecords}</td>
+                </tr>
                 <tr>
                   <th className="border border-gray-300 px-4 py-2 text-left text-gray-700" colSpan="2">
                     Appointments By Hospital

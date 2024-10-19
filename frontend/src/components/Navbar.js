@@ -43,7 +43,6 @@ const Navbar = ({ setUser }) => {
               <Link to="/appointments" className="hover:text-blue-500 text-gray-600">Appointments</Link>
               <Link to="/medical-records" className="hover:text-blue-500 text-gray-600">Medical Records</Link>
               <Link to="/payment" className="hover:text-blue-500 text-gray-600">Payment</Link>
-              <Link to="/report" className="hover:text-blue-500 text-gray-600">Report</Link>
               <Link to="/labs" className="hover:text-blue-500 text-gray-600">Lab Sessions</Link>
               <Link to="/treatments" className="hover:text-blue-500 text-gray-600">Treatment Sessions</Link>
             </>
