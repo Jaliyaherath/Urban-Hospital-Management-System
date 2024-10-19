@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -31,11 +33,11 @@ const Appointments = () => {
       const response =
         role === 'staff' || role === 'admin'
           ? await axios.get('http://localhost:5000/api/appointments/staff', {
-              headers: { Authorization: `Bearer ${token}` },
-            })
+            headers: { Authorization: `Bearer ${token}` },
+          })
           : await axios.get('http://localhost:5000/api/appointments/patient', {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+            headers: { Authorization: `Bearer ${token}` },
+          });
 
       setAppointments(response.data);
     } catch (error) {
@@ -82,10 +84,12 @@ const Appointments = () => {
           },
         }
       );
+      toast.success('Appointment created successfully', { autoClose: 1200 });
       setIsBookingModalOpen(false); // Close booking modal
       fetchAppointments(); // Refresh appointments list
     } catch (error) {
       console.error(error.response?.data?.message || error.message);
+      toast.error('Error creating apointment', { autoClose: 1200 });
     }
   };
 
@@ -106,10 +110,12 @@ const Appointments = () => {
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      toast.success('Appointment updated successfully', { autoClose: 1200 });
       setIsModalOpen(false); // Close modal after update
       fetchAppointments();
     } catch (error) {
       console.error(error.response?.data?.message || error.message);
+      toast.error('Error updating appointment', { autoClose: 1200 });
     }
   };
 
@@ -125,10 +131,12 @@ const Appointments = () => {
       await axios.delete(`http://localhost:5000/api/appointments/${appointmentToDelete._id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      toast.success('Appointment deleted successfully', { autoClose: 1200 });
       setIsDeleteModalOpen(false); // Close delete modal
       fetchAppointments();
     } catch (error) {
       console.error(error.response?.data?.message || error.message);
+      toast.error('Error deleting appointment', { autoClose: 1200 });
     }
   };
 
@@ -326,6 +334,7 @@ const Appointments = () => {
           </div>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 };

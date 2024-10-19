@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ManageTreatmentAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -27,10 +29,12 @@ const ManageTreatmentAppointments = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setAppointments(appointments.filter(appointment => appointment._id !== appointmentId));
-      alert('Appointment deleted successfully');
+      // alert('Treatment Appointment deleted successfully');
+      toast.success('Treatment ppointment deleted successfully', { autoClose: 1200 }); // Replace alert with toast
       setLoading(false);
     } catch (error) {
-      console.error('Error deleting appointment:', error);
+      console.error('Error deleting treatment appointment:', error);
+      toast.error('Failed to delete treatment appointment', { autoClose: 1200 }); // Add error toast
       setLoading(false);
     }
   };
@@ -41,17 +45,22 @@ const ManageTreatmentAppointments = () => {
       await axios.put(`http://localhost:5000/api/treatments/${appointmentId}`, { status: newStatus }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
+      
       const updatedAppointments = appointments.map(appointment => {
         if (appointment._id === appointmentId) {
           return { ...appointment, status: newStatus };
         }
         return appointment;
       });
+      
+      toast.success('Treatment Appointment updated successfully', { autoClose: 1200 }); // Replace alert with toast
       setAppointments(updatedAppointments);
     } catch (error) {
-      console.error('Error updating appointment status:', error);
+      console.error('Error updating treatment appointment status:', error);
+      toast.error('Failed to update treatment appointment status', { autoClose: 1200 }); // Add error toast
     }
   };
+  
 
   return (
     <div className="container mx-auto p-6">
@@ -66,23 +75,34 @@ const ManageTreatmentAppointments = () => {
               </p>
             </div>
             <div className="flex space-x-2">
-              <button
+            <button
                 onClick={() => deleteAppointment(appointment._id)}
-                disabled={loading}
-                className={`bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition`}
               >
-                {loading ? 'Deleting...' : 'Delete'}
+                Delete
               </button>
-              <button
-                onClick={() => updateStatus(appointment._id, 'completed')}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
-              >
-                Mark as Completed
-              </button>
+              {appointment.status !== "completed" ? (
+                <button
+                  onClick={() => updateStatus(appointment._id, 'completed')}
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                >
+                  Mark as Completed
+                </button>
+              ) : (
+                <button
+                  disabled
+                  className="bg-green-500 text-white px-4 py-2 rounded opacity-50 cursor-not-allowed"
+                >
+                  Already Completed
+                </button>
+              )}
+
+
             </div>
           </li>
         ))}
       </ul>
+      <ToastContainer />
     </div>
   );
 };

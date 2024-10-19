@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ManageLabAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -27,10 +29,11 @@ const ManageLabAppointments = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setAppointments(appointments.filter(appointment => appointment._id !== appointmentId));
-      alert('Appointment deleted successfully');
+      toast.success('Lab Appointment deleted successfully', { autoClose: 1200 });
       setLoading(false);
     } catch (error) {
-      console.error('Error deleting appointment:', error);
+      console.error('Error deleting lab appointment:', error);
+      toast.error('Failed to delete lab appointment', { autoClose: 1200 }); // Add error toast
       setLoading(false);
     }
   };
@@ -47,9 +50,11 @@ const ManageLabAppointments = () => {
         }
         return appointment;
       });
+      toast.success('Lab Appointment updated successfully', { autoClose: 1200 }); // Replace alert with toast
       setAppointments(updatedAppointments);
     } catch (error) {
       console.error('Error updating appointment status:', error);
+      toast.error('Failed to update lab appointment status', { autoClose: 1200 }); // Add error toast
     }
   };
 
@@ -68,21 +73,30 @@ const ManageLabAppointments = () => {
             <div className="flex space-x-2">
               <button
                 onClick={() => deleteAppointment(appointment._id)}
-                disabled={loading}
-                className={`bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition`}
               >
-                {loading ? 'Deleting...' : 'Delete'}
+                Delete
               </button>
-              <button
-                onClick={() => updateStatus(appointment._id, 'completed')}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
-              >
-                Mark as Completed
-              </button>
+              {appointment.status !== "completed" ? (
+                <button
+                  onClick={() => updateStatus(appointment._id, 'completed')}
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                >
+                  Mark as Completed
+                </button>
+              ) : (
+                <button
+                  disabled
+                  className="bg-green-500 text-white px-4 py-2 rounded opacity-50 cursor-not-allowed"
+                >
+                  Already Completed
+                </button>
+              )}
             </div>
           </li>
         ))}
       </ul>
+      <ToastContainer />
     </div>
   );
 };

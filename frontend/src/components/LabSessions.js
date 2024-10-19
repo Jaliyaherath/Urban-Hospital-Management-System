@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 
@@ -23,7 +25,7 @@ const LabSessions = () => {
   const [availability, setAvailability] = useState('');
 
   // Fetch available lab sessions
-  useEffect(() => {
+  
     const fetchLabs = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/labs/available', {
@@ -32,10 +34,9 @@ const LabSessions = () => {
         setLabs(response.data);
       } catch (error) {
         console.error('Error fetching lab sessions:', error);
+        toast.error('Error fetching lab sessions', { autoClose: 2000 });
       }
     };
-    fetchLabs();
-  }, []);
 
   // Fetch user’s lab appointments
   const fetchUserAppointments = async () => {
@@ -50,6 +51,7 @@ const LabSessions = () => {
   };
 
   useEffect(() => {
+    fetchLabs();
     fetchUserAppointments();
   }, []);
 
@@ -62,7 +64,8 @@ const LabSessions = () => {
         });
         setIsAdminOrStaff(response.data.role === 'admin' || response.data.role === 'staff');
       } catch (error) {
-        console.error('Error fetching user role:', error);
+        console.error('Error checking user role:', error);
+        toast.error('Error checking user role', { autoClose: 2000 });
       }
     };
     checkUserRole();
@@ -84,7 +87,8 @@ const LabSessions = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert('Lab session created successfully');
+      // alert('Lab session created successfully');
+      toast.success('Lab session created successfully', {autoClose: 1200});
       setLoading(false);
       setLabName('');
       setLabCategory('');
@@ -92,9 +96,11 @@ const LabSessions = () => {
       setLabDescription('');
       setAvailability('');
       setIsCreateModalOpen(false); // Close modal on success
-      window.location.reload();
+      fetchLabs();
+      // window.location.reload();
     } catch (error) {
       console.error('Error creating lab session:', error.response.data.message);
+      toast.error('Error creating lab session', { autoClose: 1200 });
       setLoading(false);
     }
   };
@@ -167,7 +173,6 @@ const LabSessions = () => {
           </button>
         </div>
       )}
-
       {/* Create Lab Modal */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
@@ -224,6 +229,7 @@ const LabSessions = () => {
           </div>
         </div>
       )}
+            <ToastContainer />
     </div>
   );
 };
@@ -270,7 +276,8 @@ const LabBookingForm = ({ selectedLab, setSelectedLab, fetchUserAppointments, se
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      alert('Appointment booked and payment successful');
+      // alert('Appointment booked and payment successful');
+      toast.success('Appointment booked and payment successful', {autoClose: 1200});
       setLoading(false);
       setSelectedLab(null); // Reset selected lab
       fetchUserAppointments();

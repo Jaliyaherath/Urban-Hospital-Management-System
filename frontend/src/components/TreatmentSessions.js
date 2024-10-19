@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 
@@ -23,7 +25,7 @@ const TreatmentSessions = () => {
   const [availability, setAvailability] = useState('');
 
   // Fetch available treatment sessions
-  useEffect(() => {
+
     const fetchTreatments = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/treatments/available', {
@@ -32,10 +34,9 @@ const TreatmentSessions = () => {
         setTreatments(response.data);
       } catch (error) {
         console.error('Error fetching treatment sessions:', error);
+        toast.error('Error fetching treatment sessions', { autoClose: 2000 });
       }
     };
-    fetchTreatments();
-  }, []);
 
   // Fetch user’s treatment appointments
   const fetchUserAppointments = async () => {
@@ -46,10 +47,12 @@ const TreatmentSessions = () => {
       setUserAppointments(response.data);
     } catch (error) {
       console.error('Error fetching user appointments:', error);
+      toast.error('Error fetching user appointments', { autoClose: 2000 });
     }
   };
 
   useEffect(() => {
+    fetchTreatments();
     fetchUserAppointments();
   }, []);
 
@@ -62,7 +65,8 @@ const TreatmentSessions = () => {
         });
         setIsAdmin(response.data.role === 'admin' || response.data.role === 'staff');
       } catch (error) {
-        console.error('Error fetching user role:', error);
+        console.error('Error checking user role:', error);
+        toast.error('Error checking user role', { autoClose: 2000 });
       }
     };
     checkUserRole();
@@ -73,18 +77,19 @@ const TreatmentSessions = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/treatments/create', 
-        { 
-          name: treatmentName, 
-          category: treatmentCategory, 
-          price: treatmentPrice, 
-          description: treatmentDescription, 
-          services: [], 
+      const response = await axios.post('http://localhost:5000/api/treatments/create',
+        {
+          name: treatmentName,
+          category: treatmentCategory,
+          price: treatmentPrice,
+          description: treatmentDescription,
+          services: [],
           availability: new Date(availability)
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert('Treatment session created successfully');
+      // alert('Treatment session created successfully');
+      toast.success('Treatment session created successfully', {autoClose: 1200});
       setLoading(false);
       setTreatmentName('');
       setTreatmentCategory('');
@@ -92,9 +97,11 @@ const TreatmentSessions = () => {
       setTreatmentDescription('');
       setAvailability('');
       setIsCreateModalOpen(false); // Close modal on success
-      window.location.reload();
+      // window.location.reload();
+      fetchTreatments();
     } catch (error) {
       console.error('Error creating treatment session:', error.response.data.message);
+      toast.error('Error creating treatment session', { autoClose: 1200 });
       setLoading(false);
     }
   };
@@ -111,8 +118,8 @@ const TreatmentSessions = () => {
                 {treatment.category} - ${treatment.price}
               </p>
             </div>
-            <button 
-              onClick={() => { setSelectedTreatment(treatment); setIsBookingModalOpen(true); }} 
+            <button
+              onClick={() => { setSelectedTreatment(treatment); setIsBookingModalOpen(true); }}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
             >
               Book
@@ -224,6 +231,7 @@ const TreatmentSessions = () => {
           </div>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 };
@@ -271,7 +279,8 @@ const TreatmentBookingForm = ({ selectedTreatment, setSelectedTreatment, fetchUs
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      alert('Appointment booked and payment successful');
+      // alert('Appointment booked and payment successful');
+      toast.success('Appointment booked and payment successful', {autoClose: 1200});
       setLoading(false);
       setSelectedTreatment(null); // Reset selected treatment
       fetchUserAppointments();
@@ -312,8 +321,8 @@ const TreatmentBookingForm = ({ selectedTreatment, setSelectedTreatment, fetchUs
       >
         {loading ? 'Booking...' : 'Confirm Booking & Pay'}
       </button>
-      <button 
-        onClick={() => setIsBookingModalOpen(false)} 
+      <button
+        onClick={() => setIsBookingModalOpen(false)}
         className="ml-4 text-gray-600 underline"
       >
         Cancel
