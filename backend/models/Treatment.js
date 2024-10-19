@@ -18,7 +18,7 @@ const treatmentSchema = new mongoose.Schema({
   },
   services: {
     type: [String],
-    required: true
+    required: false
   },
   availability: {
     type: Date,

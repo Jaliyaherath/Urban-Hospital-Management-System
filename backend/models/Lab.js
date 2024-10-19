@@ -6,12 +6,10 @@ const labSchema = new mongoose.Schema({
   description: { type: String, required: true },
   price: { type: Number, required: true },
   services: [String],
-  availability: [
-    {
-      startTime: { type: Date, required: true },
-      endTime: { type: Date, required: true }
-    }
-  ],
+  availability: {
+    type: Date,
+    required: true
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
