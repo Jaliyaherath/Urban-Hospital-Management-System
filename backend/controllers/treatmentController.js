@@ -162,3 +162,24 @@ exports.bookTreatmentSessionWithPayment = async (req, res) => {
     res.status(500).json({ message: 'Payment or booking failed', error: error.message });
   }
 };
+
+exports.deleteAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    await Appointment.findByIdAndDelete(appointmentId);
+    res.status(200).json({ message: 'Appointment deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting appointment' });
+  }
+};
+
+exports.updateAppointmentStatus = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const { status } = req.body;
+    const appointment = await Appointment.findByIdAndUpdate(appointmentId, { status }, { new: true });
+    res.status(200).json(appointment);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating appointment status' });
+  }
+}

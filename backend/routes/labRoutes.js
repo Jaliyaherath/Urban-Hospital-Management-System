@@ -1,6 +1,6 @@
 const express = require('express');
 const { protect, restrictTo } = require('../middleware/authMiddleware');
-const { createLabSession, getAvailableLabSessions, getUserBookings, manageBookings,bookLabSessionWithPayment } = require('../controllers/labController');
+const { createLabSession, getAvailableLabSessions, getUserBookings, manageBookings,bookLabSessionWithPayment,deleteAppointment,updateAppointmentStatus } = require('../controllers/labController');
 const router = express.Router();
 
 // Route for admins and staff to create lab sessions
@@ -15,6 +15,10 @@ router.get('/my-appointments', protect, getUserBookings);
 
 // Routes for staff/admin to view, update, and delete bookings
 router.get('/manage-appointments', protect, restrictTo('staff', 'admin'), manageBookings);
+
+router.delete('/:appointmentId', protect, restrictTo('staff', 'admin'), deleteAppointment);
+
+router.put('/:appointmentId', protect, restrictTo('staff', 'admin'), updateAppointmentStatus);
 
 router.post('/book-with-payment', protect, bookLabSessionWithPayment);
 
