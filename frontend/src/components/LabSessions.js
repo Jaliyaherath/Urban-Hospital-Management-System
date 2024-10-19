@@ -3,15 +3,24 @@ import axios from 'axios';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY); // Load the publishable key
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 
 const LabSessions = () => {
   const [labs, setLabs] = useState([]);
   const [selectedLab, setSelectedLab] = useState(null);
   const [userAppointments, setUserAppointments] = useState([]);
-  const [isAdminOrStaff, setIsAdminOrStaff] = useState(false); // Role checking for admin/staff
-  const [newLab, setNewLab] = useState({ name: '', category: '', price: 0, description: '' });
-  const [isModalOpen, setIsModalOpen] = useState(false); // For handling the booking modal
+  const [loading, setLoading] = useState(false);
+  const [isAdminOrStaff, setIsAdminOrStaff] = useState(false);
+
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Form states for creating a lab session
+  const [labName, setLabName] = useState('');
+  const [labCategory, setLabCategory] = useState('');
+  const [labPrice, setLabPrice] = useState('');
+  const [labDescription, setLabDescription] = useState('');
+  const [availability, setAvailability] = useState('');
 
   // Fetch available lab sessions
   useEffect(() => {
@@ -26,31 +35,13 @@ const LabSessions = () => {
       }
     };
     fetchLabs();
-    checkUserRole();
-    fetchUserAppointments(); // Fetch user appointments on component mount
   }, []);
 
-  // Check if the user is an admin or hospital staff
-  const checkUserRole = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/api/auth/me', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      const role = response.data.role;
-      if (role === 'Admin' || role === 'hospitalStaff') {
-        setIsAdminOrStaff(true);
-      }
-    } catch (error) {
-      console.error('Error checking user role:', error);
-    }
-  };
-
-  // Fetch user appointments
+  // Fetch user’s lab appointments
   const fetchUserAppointments = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:5000/api/labs/my-appointments', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setUserAppointments(response.data);
     } catch (error) {
@@ -58,27 +49,54 @@ const LabSessions = () => {
     }
   };
 
-  // Handle lab session creation
+  useEffect(() => {
+    fetchUserAppointments();
+  }, []);
+
+  // Fetch user role (to determine if user is admin or staff)
+  useEffect(() => {
+    const checkUserRole = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/auth/me', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        setIsAdminOrStaff(response.data.role === 'admin' || response.data.role === 'staff');
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+      }
+    };
+    checkUserRole();
+  }, []);
+
+  // Create a lab session (Admin and Staff only)
   const createLabSession = async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://localhost:5000/api/labs',
-        { ...newLab },
+      const response = await axios.post('http://localhost:5000/api/labs/create', 
+        { 
+          name: labName, 
+          category: labCategory, 
+          price: labPrice, 
+          description: labDescription, 
+          services: [], 
+          availability: new Date(availability)
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert('Lab session created successfully');
-      setLabs([...labs, response.data]); // Add the new lab to the labs list
-      setNewLab({ name: '', category: '', price: 0, description: '' });
+      setLoading(false);
+      setLabName('');
+      setLabCategory('');
+      setLabPrice('');
+      setLabDescription('');
+      setAvailability('');
+      setIsCreateModalOpen(false); // Close modal on success
+      window.location.reload();
     } catch (error) {
-      console.error('Error creating lab session:', error.response?.data?.message || error.message);
+      console.error('Error creating lab session:', error.response.data.message);
+      setLoading(false);
     }
-  };
-
-  // Open modal to book lab
-  const handleBookLab = (lab) => {
-    setSelectedLab(lab);
-    setIsModalOpen(true);
   };
 
   return (
@@ -89,10 +107,12 @@ const LabSessions = () => {
           <li key={lab._id} className="flex justify-between items-center p-4 bg-white rounded shadow-md">
             <div>
               <h3 className="text-xl font-medium">{lab.name}</h3>
-              <p>{lab.category} - ${lab.price}</p>
+              <p className="text-gray-600">
+                {lab.category} - ${lab.price}
+              </p>
             </div>
-            <button
-              onClick={() => handleBookLab(lab)}
+            <button 
+              onClick={() => { setSelectedLab(lab); setIsBookingModalOpen(true); }} 
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
             >
               Book
@@ -101,17 +121,26 @@ const LabSessions = () => {
         ))}
       </ul>
 
-      {/* Conditionally render the modal for booking */}
-      {isModalOpen && selectedLab && (
-        <Modal setIsModalOpen={setIsModalOpen}>
-          <Elements stripe={stripePromise}>
-            <LabBookingForm
-              selectedLab={selectedLab}
-              setIsModalOpen={setIsModalOpen}
-              fetchUserAppointments={fetchUserAppointments} // Pass fetchUserAppointments to update appointments after booking
-            />
-          </Elements>
-        </Modal>
+      {/* Booking Modal */}
+      {isBookingModalOpen && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <button
+              className="text-gray-500 hover:text-gray-800 float-right text-lg font-bold"
+              onClick={() => setIsBookingModalOpen(false)}
+            >
+              &times;
+            </button>
+            <Elements stripe={stripePromise}>
+              <LabBookingForm
+                selectedLab={selectedLab}
+                setSelectedLab={setSelectedLab}
+                fetchUserAppointments={fetchUserAppointments}
+                setIsBookingModalOpen={setIsBookingModalOpen} // Close modal on successful booking
+              />
+            </Elements>
+          </div>
+        </div>
       )}
 
       <h2 className="text-3xl font-semibold my-6">Your Lab Appointments</h2>
@@ -120,74 +149,86 @@ const LabSessions = () => {
           <li key={appointment._id} className="flex justify-between items-center p-4 bg-white rounded shadow-md">
             <div>
               <h3 className="text-xl font-medium">{appointment.lab.name}</h3>
-              <p>${appointment.totalPrice} - {new Date(appointment.startTime).toLocaleString()} - {appointment.status}</p>
+              <p className="text-gray-600">
+                ${appointment.totalPrice} - {new Date(appointment.startTime).toLocaleString()} - {appointment.status}
+              </p>
             </div>
           </li>
         ))}
       </ul>
 
-      {/* Conditionally render lab creation form if user is Admin or hospitalStaff */}
       {isAdminOrStaff && (
-        <div className="mt-8 p-6 bg-white rounded shadow-md">
-          <h2 className="text-3xl font-semibold mb-4">Create a New Lab Session</h2>
-          <label className="block mb-2">Name:</label>
-          <input
-            type="text"
-            value={newLab.name}
-            onChange={(e) => setNewLab({ ...newLab, name: e.target.value })}
-            className="border rounded w-full p-2 mb-4"
-          />
-          <label className="block mb-2">Category:</label>
-          <input
-            type="text"
-            value={newLab.category}
-            onChange={(e) => setNewLab({ ...newLab, category: e.target.value })}
-            className="border rounded w-full p-2 mb-4"
-          />
-          <label className="block mb-2">Price:</label>
-          <input
-            type="number"
-            value={newLab.price}
-            onChange={(e) => setNewLab({ ...newLab, price: parseFloat(e.target.value) })}
-            className="border rounded w-full p-2 mb-4"
-          />
-          <label className="block mb-2">Description:</label>
-          <input
-            type="text"
-            value={newLab.description}
-            onChange={(e) => setNewLab({ ...newLab, description: e.target.value })}
-            className="border rounded w-full p-2 mb-4"
-          />
+        <div className="mt-8">
           <button
-            onClick={createLabSession}
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+            onClick={() => setIsCreateModalOpen(true)}
           >
-            Create Lab Session
+            Create New Lab Session
           </button>
+        </div>
+      )}
+
+      {/* Create Lab Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <button
+              className="text-gray-500 hover:text-gray-800 float-right text-lg font-bold"
+              onClick={() => setIsCreateModalOpen(false)}
+            >
+              &times;
+            </button>
+            <h2 className="text-2xl font-semibold mb-4">Create New Lab Session</h2>
+            <label className="block mb-2">Lab Name:</label>
+            <input
+              type="text"
+              value={labName}
+              onChange={(e) => setLabName(e.target.value)}
+              className="border p-2 mb-4 w-full rounded"
+            />
+            <label className="block mb-2">Category:</label>
+            <input
+              type="text"
+              value={labCategory}
+              onChange={(e) => setLabCategory(e.target.value)}
+              className="border p-2 mb-4 w-full rounded"
+            />
+            <label className="block mb-2">Price:</label>
+            <input
+              type="number"
+              value={labPrice}
+              onChange={(e) => setLabPrice(e.target.value)}
+              className="border p-2 mb-4 w-full rounded"
+            />
+            <label className="block mb-2">Description:</label>
+            <input
+              type="text"
+              value={labDescription}
+              onChange={(e) => setLabDescription(e.target.value)}
+              className="border p-2 mb-4 w-full rounded"
+            />
+            <label className="block mb-2">Availability:</label>
+            <input
+              type="datetime-local"
+              value={availability}
+              onChange={(e) => setAvailability(e.target.value)}
+              className="border p-2 mb-4 w-full rounded"
+            />
+            <button
+              onClick={createLabSession}
+              disabled={loading}
+              className={`bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {loading ? 'Creating...' : 'Create Lab Session'}
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-// Modal component to handle pop-up
-const Modal = ({ children, setIsModalOpen }) => {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
-        {children}
-        <button
-          onClick={() => setIsModalOpen(false)}
-          className="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition w-full max-w-md"
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  );
-};
-
-const LabBookingForm = ({ selectedLab, setIsModalOpen, fetchUserAppointments }) => {
+const LabBookingForm = ({ selectedLab, setSelectedLab, fetchUserAppointments, setIsBookingModalOpen }) => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [loading, setLoading] = useState(false);
@@ -206,7 +247,6 @@ const LabBookingForm = ({ selectedLab, setIsModalOpen, fetchUserAppointments }) 
         return;
       }
 
-      // Create payment method
       const paymentMethodResponse = await stripe.createPaymentMethod({
         type: 'card',
         card: cardElement,
@@ -218,7 +258,6 @@ const LabBookingForm = ({ selectedLab, setIsModalOpen, fetchUserAppointments }) 
         return;
       }
 
-      // Send paymentMethodId and booking data to the server
       const token = localStorage.getItem('token');
       const response = await axios.post(
         'http://localhost:5000/api/labs/book-with-payment',
@@ -233,8 +272,9 @@ const LabBookingForm = ({ selectedLab, setIsModalOpen, fetchUserAppointments }) 
 
       alert('Appointment booked and payment successful');
       setLoading(false);
-      setIsModalOpen(false); // Close the modal
-      fetchUserAppointments(); // Fetch user appointments after booking
+      setSelectedLab(null); // Reset selected lab
+      fetchUserAppointments();
+      setIsBookingModalOpen(false); // Close modal on success
     } catch (error) {
       setError(
         error.response?.data?.message ||
@@ -245,31 +285,37 @@ const LabBookingForm = ({ selectedLab, setIsModalOpen, fetchUserAppointments }) 
   };
 
   return (
-    <div>
+    <div className="mt-4">
       <h3 className="text-2xl font-semibold mb-4">Book Lab: {selectedLab.name}</h3>
       <label className="block mb-2">Start Time:</label>
       <input
         type="datetime-local"
         value={startTime}
         onChange={(e) => setStartTime(e.target.value)}
-        className="border rounded w-full p-2 mb-4"
+        className="border p-2 mb-4 w-full rounded"
       />
       <label className="block mb-2">End Time:</label>
       <input
         type="datetime-local"
         value={endTime}
         onChange={(e) => setEndTime(e.target.value)}
-        className="border rounded w-full p-2 mb-4"
+        className="border p-2 mb-4 w-full rounded"
       />
 
-      <CardElement className="border rounded p-2 mb-4" />
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <CardElement className="border p-2 mb-4 rounded" />
+      {error && <p className="text-red-600">{error}</p>}
       <button
-        onClick={() => bookAppointment(selectedLab._id)} // Remove price parameter
+        onClick={() => bookAppointment(selectedLab._id)}
         disabled={loading || !stripe}
-        className={`w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {loading ? 'Booking...' : 'Confirm Booking & Pay'}
+      </button>
+      <button 
+        onClick={() => setIsBookingModalOpen(false)} 
+        className="ml-4 text-gray-600 underline"
+      >
+        Cancel
       </button>
     </div>
   );
